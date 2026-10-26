@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yusuf Aslam · Portfolio</title>
+  <meta name="description" content="Portfolio of Yusuf Aslam, Computer Science student. Projects are loaded live from GitHub.">
+
+  <!-- Fonts (optional: delete these 3 lines and the site falls back to system fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       COLOURS & THEME: change these values to restyle the site
+       ========================================================= */
+    :root {
+      --header-bg: #000000;                  /* header background */
+      --header-text: #ffffff;                /* header text and icons */
+      --bg: #0c0d10;                         /* page background (fixed, never scrolls) */
+      --bg-glow: rgba(88, 166, 255, 0.09);   /* soft glow at the top of the background */
+      --grid-line: rgba(255, 255, 255, 0.035); /* faint grid pattern on the background */
+      --card-bg: #15171c;                    /* project / about card background */
+      --card-border: #262a33;                /* card border */
+      --card-border-hover: #3b4250;          /* card border on hover */
+      --text: #e6e8eb;                       /* main text */
+      --text-muted: #9aa1ac;                 /* secondary text */
+      --accent: #58a6ff;                     /* buttons, links, highlights */
+      --accent-text: #0b0d10;                /* text on accent-coloured buttons */
+      --pinned: #f2c94c;                     /* "Pinned" badge colour */
+      --pinned-border: rgba(242, 201, 76, 0.45); /* border around pinned cards */
+
+      --radius: 14px;                        /* corner roundness of cards */
+      --header-h: 72px;                      /* header height */
+      --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+    }
+
+    /* ---------- Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fixed background layer: sits behind everything and never scrolls.
+       (A fixed element is used instead of background-attachment: fixed
+       because that doesn't work on iPhones.) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% -10%, var(--bg-glow), transparent 70%),
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+        var(--bg);
+      background-size: 100% 100%, 40px 40px, 40px 40px, auto;
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* ---------- Fixed header ---------- */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      background: var(--header-bg);
+      color: var(--header-text);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .brand p::before { content: "> "; color: var(--accent); }
+
+    .header-links { display: flex; gap: 8px; }
+
+    .icon-link {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: var(--header-text);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .icon-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .icon-link svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* ---------- Scrolling content ---------- */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: calc(var(--header-h) + 32px) 16px 24px;
+    }
+
+    /* About card */
+    .about {
+      background: linear-gradient(180deg, #181a20, var(--card-bg));
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    .about h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .about p.lead {
+      margin: 0 0 20px;
+      color: var(--text-muted);
+      max-width: 65ch;
+    }
+
+    .chips-label {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+      padding: 0;
+      margin: 0 0 22px;
+    }
+
+    .chips li {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+    }
+
+    /* Buttons */
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, border-color 0.2s, filter 0.2s;
+    }
+
+    .btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { filter: brightness(1.1); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--card-border-hover);
+    }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.06); }
+
+    /* Projects section */
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 { margin: 0; font-size: 1.3rem; letter-spacing: -0.01em; }
+
+    .count { font-family: var(--mono); font-size: 0.8rem; color: var(--text-muted); }
+
+    .projects {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 720px)  { .projects { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1080px) { .projects { grid-template-columns: repeat(3, 1fr); } }
+
+    /* Project card */
+    .card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+
+    .card:hover {
+      border-color: var(--card-border-hover);
+      transform: translateY(-3px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .card.pinned { border-color: var(--pinned-border); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--pinned);
+      background: rgba(242, 201, 76, 0.12);
+      border: 1px solid var(--pinned-border);
+    }
+
+    .desc {
+      flex-grow: 1;
+      margin: 0 0 14px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .desc.empty { font-style: italic; opacity: 0.7; }
+
+    .topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 14px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .topics li {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-bottom: 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .meta span { display: inline-flex; align-items: center; gap: 6px; }
+    .meta svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .lang-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    .card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .card-actions .btn { padding: 7px 12px; font-size: 0.84rem; }
+
+    /* Loading skeleton */
+    .skeleton { pointer-events: none; }
+
+    .sk-line {
+      height: 12px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #1c1f26 25%, #272b34 37%, #1c1f26 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s ease infinite;
+    }
+
+    @keyframes shimmer {
+      from { background-position: 100% 50%; }
+      to   { background-position: 0 50%; }
+    }
+
+    /* Empty / error message */
+    .notice {
+      grid-column: 1 / -1;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border-hover);
+      border-radius: var(--radius);
+    }
+
+    .notice h3 { margin: 0 0 6px; color: var(--text); }
+    .notice p { margin: 0 auto 18px; max-width: 48ch; }
+    .notice .btn-row { justify-content: center; }
+
+    .stale-note {
+      margin: -6px 0 16px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Fade-in / slide-up when a card scrolls into view */
+    .reveal { opacity: 0; }
+
+    .reveal.visible {
+      opacity: 1;
+      animation: rise 0.6s ease var(--delay, 0ms) backwards;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    .site-footer {
+      max-width: 1100px;
+      margin: 48px auto 0;
+      padding: 28px 16px 36px;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      margin-bottom: 14px;
+    }
+
+    .footer-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+    .footer-links svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* Small screens */
+    @media (max-width: 480px) {
+      :root { --header-h: 64px; }
+      .brand h1 { font-size: 1.12rem; }
+      .brand p { font-size: 0.72rem; }
+      .icon-link { width: 36px; height: 36px; }
+      .about { padding: 20px; }
+    }
+
+    /* Respect users who turn off animations */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .reveal.visible { opacity: 1; animation: none; }
+      .card:hover, .btn:hover, .icon-link:hover { transform: none; }
+      .sk-line { animation: none; }
+    }
+  </style>
+
+  <!-- Without JavaScript, show the content instead of waiting for the fade-in -->
+  <noscript><style>.reveal { opacity: 1; }</style></noscript>
+</head>
+
+<body>
+  <!-- ============ FIXED HEADER ============ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <h1>Yusuf Aslam</h1>                 <!-- EDIT: your name -->
+        <p>Computer Science Student</p>      <!-- EDIT: your subtitle -->
+      </div>
+
+      <nav class="header-links" aria-label="Social links">
+        <a class="icon-link" data-link="github" href="#" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" title="GitHub">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+        <a class="icon-link" data-link="linkedin" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" title="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 4.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ SCROLLING CONTENT ============ -->
+  <main>
+    <!-- About Me card. EDIT: change the heading and paragraph to suit you -->
+    <section class="about reveal" aria-labelledby="about-title">
+      <p class="eyebrow">// about me</p>
+      <h2 id="about-title">Hi, I'm Yusuf. I build things with code.</h2>
+      <p class="lead">
+        I'm a second-year Computer Science student looking for an industrial placement.
+        I enjoy turning ideas into working software and learning new tools along the way.
+        The projects below are pulled live from my GitHub, so you're always seeing my latest work.
+      </p>
+
+      <!-- Filled in automatically with the languages used across your repos -->
+      <div id="languages" hidden>
+        <p class="chips-label">Languages in my projects</p>
+        <ul class="chips" id="language-list"></ul>
+      </div>
+
+      <div class="btn-row">
+        <a class="btn btn-primary" data-link="github" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          View my GitHub
+        </a>
+        <a class="btn btn-ghost" data-link="linkedin" href="#" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 4.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          Connect on LinkedIn
+        </a>
+      </div>
+    </section>
+
+    <!-- Projects (filled in automatically from GitHub) -->
+    <section aria-labelledby="projects-title">
+      <div class="section-head">
+        <h2 id="projects-title">Projects</h2>
+        <span class="count" id="project-count"></span>
+      </div>
+      <p class="stale-note" id="stale-note" hidden>Showing saved results. GitHub couldn't be reached just now.</p>
+      <div class="projects" id="projects" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a data-link="github" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a data-link="linkedin" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 4.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        LinkedIn
+      </a>
+      <a data-link="email" href="#" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm17 2.24-7.4 5.55a1 1 0 0 1-1.2 0L4 7.24V17h16V7.24zM18.67 7H5.33L12 12l6.67-5z"/></svg>
+        Email
+      </a>
+    </div>
+    <p>&copy; <span id="year"></span> Yusuf Aslam. Built with HTML, CSS &amp; JavaScript.</p>
+  </footer>
+
+  <script>
+    /* =========================================================
+       CONFIG: edit these values to personalise the site
+       ========================================================= */
+    const CONFIG = {
+      // Your GitHub username (projects are loaded from this account)
+      githubUsername: "Yusuf011-4023",
+
+      // EDIT: paste your LinkedIn profile URL here
+      linkedinUrl: "https://www.linkedin.com/in/yusuf-aslam-77728322a/",
+
+      // Optional: your contact email. Leave "" to hide the Email link.
+      email: "",
+
+      // Repos to show first, in this order, with a "Pinned" badge.
+      // Use the exact repo names, e.g. ["job-tracker", "LogisticsShippinhRates"]
+      pinnedRepos: [],
+
+      // Repos to hide from the site (forked repos are always hidden)
+      excludeRepos: ["testrepo"],
+
+      // Hide the special "username/username" profile README repo if you make one
+      hideProfileReadme: true,
+
+      // How long to remember GitHub's response, to avoid hitting the
+      // API limit (60 requests per hour per visitor)
+      cacheMinutes: 15,
+    };
+
+    /* ---------- Icons used inside project cards ---------- */
+    const ICONS = {
+      github: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
+      star: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .67.42l1.89 3.81 4.2.61a.75.75 0 0 1 .42 1.28l-3.05 2.97.72 4.19a.75.75 0 0 1-1.09.79L8 12.35l-3.77 1.98a.75.75 0 0 1-1.09-.79l.72-4.19L.82 6.37a.75.75 0 0 1 .42-1.28l4.2-.61L7.33.67A.75.75 0 0 1 8 .25z"/></svg>',
+      clock: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0zm7-3.25v2.94l2.03 2.03a.75.75 0 0 1-1.06 1.06L7.22 8.53A.75.75 0 0 1 7 8V4.75a.75.75 0 0 1 1.5 0z"/></svg>',
+      external: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .14.11.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.78 2.78 2 3.75 2zm6.85-.5h3.65a.25.25 0 0 1 .25.25V5.4a.25.25 0 0 1-.43.18L12.78 4.3 9.53 7.53a.75.75 0 0 1-1.06-1.06l3.25-3.25-1.29-1.29a.25.25 0 0 1 .17-.43z"/></svg>',
+    };
+
+    /* GitHub's colours for common languages (anything else is grey) */
+    const LANGUAGE_COLOURS = {
+      JavaScript: "#f1e05a", TypeScript: "#3178c6", Python: "#3572A5", Java: "#b07219",
+      C: "#555555", "C++": "#f34b7d", "C#": "#178600", HTML: "#e34c26", CSS: "#563d7c",
+      SCSS: "#c6538c", Go: "#00ADD8", Rust: "#dea584", PHP: "#4F5D95", Ruby: "#701516",
+      Swift: "#F05138", Kotlin: "#A97BFF", Dart: "#00B4AB", Shell: "#89e051",
+      "Jupyter Notebook": "#DA5B0B", Vue: "#41b883", R: "#198CE7", SQL: "#e38c00",
+    };
+
+    const API_URL = `https://api.github.com/users/${encodeURIComponent(CONFIG.githubUsername)}/repos?per_page=100&sort=pushed`;
+    const CACHE_KEY = `portfolio-repos:${CONFIG.githubUsername}`;
+    const projectsEl = document.getElementById("projects");
+
+    /* ---------- Small helpers ---------- */
+
+    // Make text safe to put inside HTML
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (c) => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+      ));
+    }
+
+    // Only allow http(s) links for live demos; add https:// if it's missing
+    function safeUrl(url) {
+      if (!url || !url.trim()) return null;
+      let value = url.trim();
+      if (!/^https?:\/\//i.test(value)) value = "https://" + value;
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : null;
+      } catch {
+        return null;
+      }
+    }
+
+    // "3 days ago", "last month", etc.
+    const relativeFormat = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+    function timeAgo(dateString) {
+      const seconds = (new Date(dateString) - Date.now()) / 1000;
+      const units = [["year", 31536000], ["month", 2592000], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60]];
+      for (const [unit, size] of units) {
+        if (Math.abs(seconds) >= size) return relativeFormat.format(Math.round(seconds / size), unit);
+      }
+      return "just now";
+    }
+
+    function fullDate(dateString) {
+      return new Date(dateString).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    /* ---------- Links in the header, about card and footer ---------- */
+    function setLinks() {
+      const links = {
+        github: `https://github.com/${CONFIG.githubUsername}`,
+        linkedin: CONFIG.linkedinUrl,
+        email: CONFIG.email ? `mailto:${CONFIG.email}` : "",
+      };
+      document.querySelectorAll("[data-link]").forEach((el) => {
+        const href = links[el.dataset.link];
+        if (href) {
+          el.href = href;
+          el.hidden = false;
+        } else {
+          el.hidden = true;
+        }
+      });
+      document.getElementById("year").textContent = new Date().getFullYear();
+    }
+
+    /* ---------- Caching (so refreshing the page doesn't use up the API limit) ---------- */
+    function readCache(allowExpired = false) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CACHE_KEY));
+        if (!saved || !Array.isArray(saved.repos)) return null;
+        const expired = Date.now() - saved.time > CONFIG.cacheMinutes * 60 * 1000;
+        return expired && !allowExpired ? null : saved.repos;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeCache(repos) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), repos }));
+      } catch {
+        // Storage unavailable (e.g. private browsing): the site still works without it
+      }
+    }
+
+    /* ---------- Fetch repos from GitHub ---------- */
+    async function fetchRepos() {
+      const response = await fetch(API_URL, { headers: { Accept: "application/vnd.github+json" } });
+
+      if (!response.ok) {
+        const error = new Error(`GitHub API responded with ${response.status}`);
+        error.status = response.status;
+        if ((response.status === 403 || response.status === 429) && response.headers.get("x-ratelimit-remaining") === "0") {
+          error.rateLimited = true;
+          const reset = Number(response.headers.get("x-ratelimit-reset"));
+          if (reset) error.resetAt = new Date(reset * 1000);
+        }
+        throw error;
+      }
+
+      const data = await response.json();
+      // Keep only the fields the site uses
+      return data.map((repo) => ({
+        name: repo.name,
+        description: repo.description,
+        language: repo.language,
+        stars: repo.stargazers_count,
+        url: repo.html_url,
+        homepage: repo.homepage,
+        topics: repo.topics || [],
+        fork: repo.fork,
+        updated: repo.pushed_at || repo.updated_at, // pushed_at = last time code was pushed
+      }));
+    }
+
+    /* ---------- Filter and sort: pinned first, then most recently updated ---------- */
+    function prepareRepos(repos) {
+      const pinned = CONFIG.pinnedRepos.map((name) => name.toLowerCase());
+      const excluded = new Set(CONFIG.excludeRepos.map((name) => name.toLowerCase()));
+      if (CONFIG.hideProfileReadme) excluded.add(CONFIG.githubUsername.toLowerCase());
+
+      return repos
+        .filter((repo) => !repo.fork && !excluded.has(repo.name.toLowerCase()))
+        .map((repo) => ({ ...repo, pinnedIndex: pinned.indexOf(repo.name.toLowerCase()) }))
+        .sort((a, b) => {
+          const aPinned = a.pinnedIndex !== -1;
+          const bPinned = b.pinnedIndex !== -1;
+          if (aPinned && bPinned) return a.pinnedIndex - b.pinnedIndex;
+          if (aPinned !== bPinned) return aPinned ? -1 : 1;
+          return new Date(b.updated) - new Date(a.updated);
+        });
+    }
+
+    /* ---------- Build the HTML for one project card ---------- */
+    function cardHtml(repo, index) {
+      const isPinned = repo.pinnedIndex !== -1;
+      const demoUrl = safeUrl(repo.homepage);
+      const colour = LANGUAGE_COLOURS[repo.language] || "#8b949e";
+      const topics = repo.topics.slice(0, 4);
+
+      return `
+        <article class="card reveal${isPinned ? " pinned" : ""}" style="--delay:${(index % 3) * 90}ms">
+          <div class="card-top">
+            <h3>${escapeHtml(repo.name)}</h3>
+            ${isPinned ? '<span class="badge">&#9733; Pinned</span>' : ""}
+          </div>
+          <p class="desc${repo.description ? "" : " empty"}">${escapeHtml(repo.description || "No description yet.")}</p>
+          ${topics.length ? `<ul class="topics">${topics.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>` : ""}
+          <div class="meta">
+            ${repo.language ? `<span><i class="lang-dot" style="background:${colour}"></i>${escapeHtml(repo.language)}</span>` : ""}
+            <span title="Stars">${ICONS.star}${repo.stars}</span>
+            <span title="${escapeHtml(fullDate(repo.updated))}">${ICONS.clock}Updated ${timeAgo(repo.updated)}</span>
+          </div>
+          <div class="card-actions">
+            <a class="btn btn-primary" href="${escapeHtml(repo.url)}" target="_blank" rel="noopener noreferrer">${ICONS.github}View on GitHub</a>
+            ${demoUrl ? `<a class="btn btn-ghost" href="${escapeHtml(demoUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.external}Live demo</a>` : ""}
+          </div>
+        </article>`;
+    }
+
+    /* ---------- Rendering states ---------- */
+    function renderLoading(count = 6) {
+      projectsEl.setAttribute("aria-busy", "true");
+      document.getElementById("project-count").textContent = "Loading…";
+      projectsEl.innerHTML = Array.from({ length: count }, () => `
+        <div class="card skeleton" aria-hidden="true">
+          <div class="sk-line" style="width:55%;height:16px"></div>
+          <div class="sk-line" style="width:95%"></div>
+          <div class="sk-line" style="width:80%"></div>
+          <div class="sk-line" style="width:40%;margin-top:12px"></div>
+          <div class="sk-line" style="width:45%;height:32px;margin:8px 0 0"></div>
+        </div>`).join("");
+    }
+
+    function renderNotice(title, message, showRetry) {
+      projectsEl.setAttribute("aria-busy", "false");
+      document.getElementById("project-count").textContent = "";
+      projectsEl.innerHTML = `
+        <div class="notice">
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(message)}</p>
+          <div class="btn-row">
+            ${showRetry ? '<button class="btn btn-ghost" type="button" id="retry">Try again</button>' : ""}
+            <a class="btn btn-primary" href="https://github.com/${escapeHtml(CONFIG.githubUsername)}" target="_blank" rel="noopener noreferrer">${ICONS.github}See my GitHub</a>
+          </div>
+        </div>`;
+      const retry = document.getElementById("retry");
+      if (retry) retry.addEventListener("click", loadProjects);
+    }
+
+    function renderError(error) {
+      if (error.rateLimited) {
+        const when = error.resetAt
+          ? ` Please try again after ${error.resetAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`
+          : " Please try again in a little while.";
+        renderNotice("Taking a quick break", "GitHub limits how often projects can be loaded." + when + " In the meantime, you can browse my work on GitHub directly.", false);
+      } else if (error.status === 404) {
+        renderNotice("Projects not found", `Couldn't find the GitHub user "${CONFIG.githubUsername}". Check githubUsername in the CONFIG section.`, false);
+      } else {
+        renderNotice("Couldn't load projects", "Something went wrong reaching GitHub. Check your connection and try again, or view my projects on GitHub.", true);
+      }
+    }
+
+    function renderProjects(repos) {
+      projectsEl.setAttribute("aria-busy", "false");
+
+      if (!repos.length) {
+        renderNotice("Projects coming soon", "There aren't any public projects to show yet. Check back soon!", false);
+        return;
+      }
+
+      document.getElementById("project-count").textContent = `${repos.length} ${repos.length === 1 ? "repository" : "repositories"}`;
+      projectsEl.innerHTML = repos.map(cardHtml).join("");
+      projectsEl.querySelectorAll(".reveal").forEach(observeReveal);
+      renderLanguages(repos);
+    }
+
+    // Show the languages used across your repos in the About card, most used first
+    function renderLanguages(repos) {
+      const counts = {};
+      repos.forEach((repo) => { if (repo.language) counts[repo.language] = (counts[repo.language] || 0) + 1; });
+      const languages = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 8);
+      if (!languages.length) return;
+
+      document.getElementById("language-list").innerHTML = languages.map((lang) => `
+        <li><i class="lang-dot" style="background:${LANGUAGE_COLOURS[lang] || "#8b949e"}"></i>${escapeHtml(lang)}</li>`).join("");
+      document.getElementById("languages").hidden = false;
+    }
+
+    /* ---------- Fade-in / slide-up as elements scroll into view ---------- */
+    const revealObserver = "IntersectionObserver" in window
+      ? new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" })
+      : null;
+
+    function observeReveal(el) {
+      if (revealObserver) revealObserver.observe(el);
+      else el.classList.add("visible");
+    }
+
+    /* ---------- Start ---------- */
+    async function loadProjects() {
+      document.getElementById("stale-note").hidden = true;
+      const cached = readCache();
+      if (cached) {
+        renderProjects(prepareRepos(cached));
+        return;
+      }
+
+      renderLoading();
+      try {
+        const repos = await fetchRepos();
+        writeCache(repos);
+        renderProjects(prepareRepos(repos));
+      } catch (error) {
+        console.error("Could not load GitHub repos:", error);
+        // If GitHub is unavailable, fall back to the last saved results
+        const saved = readCache(true);
+        if (saved) {
+          renderProjects(prepareRepos(saved));
+          document.getElementById("stale-note").hidden = false;
+        } else {
+          renderError(error);
+        }
+      }
+    }
+
+    setLinks();
+    document.querySelectorAll(".reveal").forEach(observeReveal);
+    loadProjects();
+  </script>
+</body>
+</html>
