@@ -36,7 +36,6 @@ const CONFIG = {
   const API_URL = `https://api.github.com/users/${encodeURIComponent(CONFIG.githubUsername)}/repos?per_page=100&sort=pushed`;
   const CACHE_KEY = `portfolio-repos-v2:${CONFIG.githubUsername}`;
 
-  const collection = document.getElementById("collection");
   const rail = document.getElementById("rail");
   let engine = null;   // the ScrollCraft instance, once mounted
   let parts = [];      // every drafted part on the page
@@ -334,18 +333,7 @@ const CONFIG = {
     document.getElementById("plate-no").textContent = `No. ${pad2(rail.querySelectorAll(".sheet").length)} · Enquiries`;
     buildIndex();
 
-    // Reduced motion: a plain vertical stack. Otherwise: a horizontal rail
-    // driven by vertical scroll, about one screen of scroll per object.
-    if (reduce) {
-      collection.classList.add("collection--stack");
-    } else {
-      const objects = rail.querySelectorAll(".sheet").length + 0.4;
-      collection.setAttribute("data-sc-act", "pan");
-      collection.setAttribute("data-sc-span", (1 + objects * 0.9).toFixed(2));
-      rail.setAttribute("data-sc-pan", "0");
-    }
     engine = window.ScrollCraft.mount(document.body);
-    collection.setAttribute("data-sc-verify-state", "");
     update();
   }
 
@@ -367,11 +355,17 @@ const CONFIG = {
   }
 
   /* ---------- Drafting: scroll is the pencil ---------- */
-  function draftAmount(sheet) {
+  function draftAmount(part) {
     if (reduce) return 1;
-    // 0 when the sheet's left edge is entering on the right, 1 once it has travelled ~60% of the screen
-    const left = sheet.getBoundingClientRect().left;
-    return clamp01((innerWidth * 0.98 - left) / (innerWidth * 0.62));
+    // 0 when the middle of the drawing comes up into view at the bottom of the screen,
+    // 1 when the middle of the whole sheet reaches the middle of the screen
+    const sheet = part.sheet.getBoundingClientRect();
+    const draw = part.draw.firstElementChild.getBoundingClientRect();
+    const drawMid = draw.top + draw.height / 2;
+    const sheetMid = sheet.top + sheet.height / 2;
+    const travelled = innerHeight * 0.95 - drawMid;
+    const total = innerHeight * 0.95 - innerHeight / 2 + (sheetMid - drawMid);
+    return clamp01(travelled / Math.max(total, 1));
   }
 
   // Lines draw themselves (their dash offset is inherited from the group);
@@ -387,10 +381,8 @@ const CONFIG = {
   }
 
   function update() {
-    const signature = [];
     parts.forEach((part) => {
-      const d = draftAmount(part.sheet);
-      signature.push(d.toFixed(2));
+      const d = draftAmount(part);
       if (Math.abs(d - part.last) < 0.002) return;
       part.last = d;
       const o = phase(d, 0, 0.45), c = phase(d, 0.3, 0.6), m = phase(d, 0.5, 0.82), t = phase(d, 0.68, 0.96);
@@ -404,18 +396,8 @@ const CONFIG = {
         n.el.textContent = Math.round(n.to * amount);
       });
     });
-    // Depth: the lettering guides on object 00 lag slightly behind the sheet
-    const maker = document.getElementById("obj-00");
-    const guides = maker && maker.querySelectorAll(".guides");
-    if (guides && !reduce) {
-      const lag = Math.min(0, maker.getBoundingClientRect().left - railStart) * -0.12;
-      guides.forEach((g) => g.style.setProperty("--lag", `${lag.toFixed(1)}px`));
-    }
-    // Lets the verification harness see the drafting move
-    collection.setAttribute("data-sc-verify-state", signature.join(","));
   }
 
-  let railStart = 0;
   let ticking = false;
   addEventListener("scroll", () => {
     if (ticking) return;
@@ -479,22 +461,12 @@ const CONFIG = {
     list.innerHTML = items.join("");
   }
 
-  // Scroll so that a sheet in the horizontal rail lands at the left of the screen
-  function scrollTargetFor(el) {
-    const act = engine && engine.acts.find((a) => a.el === collection);
-    if (!act || reduce || !rail.contains(el)) {
-      return el.getBoundingClientRect().top + scrollY - (el.id === "contact" ? 0 : 64);
-    }
-    const over = rail.scrollWidth - innerWidth;
-    const offset = el.offsetLeft - parseFloat(getComputedStyle(rail).paddingLeft);
-    const p = over > 0 ? clamp01(offset / over) : 0;
-    return act.top + p * Math.max(act.height - innerHeight, 1);
-  }
-
-  function jumpTo(id, instant) {
+  // Scroll so the object sits just below the fixed header
+  function jumpTo(id) {
     const el = document.getElementById(id);
     if (!el) return;
-    scrollTo({ top: scrollTargetFor(el), behavior: instant || reduce ? "instant" : "smooth" });
+    const offset = el.id === "contact" ? 0 : document.querySelector(".bar").offsetHeight + 16;
+    scrollTo({ top: el.getBoundingClientRect().top + scrollY - offset, behavior: reduce ? "instant" : "smooth" });
   }
 
   const toggle = document.getElementById("index-toggle");
@@ -520,15 +492,6 @@ const CONFIG = {
     if (!panel.hidden && !panel.contains(e.target) && !toggle.contains(e.target)) setIndex(false);
   });
 
-  // Keyboard: tabbing to a link on a sheet that is off to the side brings that sheet into view
-  rail.addEventListener("focusin", (e) => {
-    if (reduce || !engine) return;
-    const sheet = e.target.closest(".sheet");
-    if (!sheet) return;
-    const r = sheet.getBoundingClientRect();
-    if (r.left < 0 || r.right > innerWidth) jumpTo(sheet.id, true);
-  });
-
   // Redraw the parts when switching between phone and desktop layouts
   compactMQ.addEventListener("change", () => { drawParts(); update(); });
   addEventListener("resize", () => { placeGuides(); update(); }, { passive: true });
@@ -536,7 +499,6 @@ const CONFIG = {
   /* ---------- Start ---------- */
   async function start() {
     setLinks();
-    railStart = document.getElementById("obj-00").getBoundingClientRect().left;
     (document.fonts ? document.fonts.ready : Promise.resolve()).then(placeGuides);
 
     const cached = readCache();
