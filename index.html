@@ -114,16 +114,17 @@
   .index a:hover, .index a:focus-visible { background: #161616; }
   .index__no { font-family: var(--sc-font-mono); font-size: 0.75rem; color: var(--sc-accent); }
 
-  /* ---------- The collection (horizontal rail of drawing sheets) ---------- */
-  .stage { padding-top: var(--bar-h); }
+  /* ---------- The collection (drawing sheets stacked down the page) ---------- */
+  .collection { padding: calc(var(--bar-h) + var(--sc-6)) max(16px, var(--sc-gutter)) 0; }
   .rail {
-    height: 100%; align-items: center; gap: clamp(1.5rem, 4vw, 4rem);
-    padding-inline: max(16px, var(--sc-gutter));
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(3rem, 7vw, 6rem);
   }
   .sheet {
     flex: 0 0 auto;
-    width: min(70rem, 80vw);
-    height: min(42rem, calc(100svh - var(--bar-h) - 3rem));
+    width: min(70rem, 100%);
+    height: min(42rem, calc(100svh - var(--bar-h) - 4rem));
+    min-height: 30rem;
     position: relative;
     display: grid; grid-template-columns: minmax(0, 1fr) 19rem;
     background: var(--sc-surface);
@@ -208,7 +209,7 @@
   .letter__line { display: block; position: relative; }
   .letter__text { position: relative; z-index: 1; }
   .letter__line:nth-child(2) .letter__text { color: transparent; -webkit-text-stroke: 1.5px var(--sc-ink); }
-  .guides { position: absolute; inset: 0 -0.5rem; pointer-events: none; z-index: 0; translate: var(--lag, 0) 0; }
+  .guides { position: absolute; inset: 0 -0.5rem; pointer-events: none; z-index: 0; }
   .guide {
     position: absolute; left: 0; right: 0; height: 0;
     border-top: 1px solid color-mix(in oklab, var(--sc-accent) 55%, transparent);
@@ -235,10 +236,12 @@
 
   /* ---------- The drafted part (one per project) ---------- */
   .part { font-family: var(--sc-font-mono); }
-  .part .ln { fill: none; stroke-dasharray: 1 1; vector-effect: non-scaling-stroke; stroke-linecap: round; }
-  .part .ink { stroke: var(--sc-ink); stroke-width: 1.4; }
-  .part .ink-soft { stroke: color-mix(in oklab, var(--sc-ink) 45%, transparent); stroke-width: 1; }
-  .part .red { stroke: var(--sc-accent); stroke-width: 1; }
+  /* Self-drawing lines. No vector-effect here: non-scaling-stroke breaks the
+     pathLength dash maths in Chrome and the lines stop short of complete. */
+  .part .ln { fill: none; stroke-dasharray: 1 1; stroke-linecap: round; }
+  .part .ink { stroke: var(--sc-ink); stroke-width: 1.15; }
+  .part .ink-soft { stroke: color-mix(in oklab, var(--sc-ink) 45%, transparent); stroke-width: 0.85; }
+  .part .red { stroke: var(--sc-accent); stroke-width: 0.85; }
   .part .centre { fill: none; stroke: color-mix(in oklab, var(--sc-accent) 70%, transparent); stroke-width: 1; stroke-dasharray: 10 4 2 4; vector-effect: non-scaling-stroke; }
   .part .hole { fill: var(--sc-surface); stroke: var(--sc-ink); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
   .part .arrow { fill: var(--sc-accent); }
@@ -260,8 +263,8 @@
   }
   @keyframes breathe { from { opacity: 0.35; } to { opacity: 1; } }
 
-  /* End of the rail: a breath before the close */
-  .rail-end { flex: 0 0 auto; width: min(22rem, 70vw); }
+  /* End of the collection: a breath before the close */
+  .rail-end { flex: 0 0 auto; width: min(70rem, 100%); }
   .rail-end p { margin: 0; }
   .rail-end__text { margin-top: var(--sc-3) !important; font-size: var(--sc-t-lg); line-height: 1.4; text-wrap: balance; }
 
@@ -292,13 +295,13 @@
   /* ---------- Phones ---------- */
   @media (max-width: 860px) {
     .sheet {
-      width: 88vw;
-      height: calc(100svh - var(--bar-h) - 2.2rem);
+      height: auto;
+      min-height: min(44rem, calc(100svh - var(--bar-h) - 3rem));
       grid-template-columns: minmax(0, 1fr);
       grid-template-rows: minmax(0, 1fr) auto;
       outline-offset: 4px;
     }
-    .sheet__draw { border-right: 0; border-bottom: 1px solid var(--sc-hairline-strong); padding: 14px; }
+    .sheet__draw { border-right: 0; border-bottom: 1px solid var(--sc-hairline-strong); padding: 14px; min-height: 14rem; }
     .tb__title { font-size: var(--sc-t-base); padding: var(--sc-3) var(--sc-4); }
     .tb__rows > div { padding: 9px var(--sc-4); grid-template-columns: 5rem 1fr; }
     .tb__note { -webkit-line-clamp: 3; }
@@ -315,12 +318,6 @@
     .tb__note { -webkit-line-clamp: 2; }
   }
 
-  /* ---------- Reduced motion: a plain vertical stack, every drawing complete ---------- */
-  .collection--stack { padding: calc(var(--bar-h) + var(--sc-6)) max(16px, var(--sc-gutter)) 0; }
-  .collection--stack .rail { flex-direction: column; height: auto; }
-  .collection--stack .sheet { width: min(70rem, 100%); height: auto; min-height: 30rem; }
-  .collection--stack .sheet__draw { min-height: 18rem; }
-  .collection--stack .rail-end { width: auto; }
 </style>
 </head>
 <body>
@@ -358,7 +355,7 @@
        Object 00 (you) is written here. The projects are added by app.js
        from the GitHub API, then the scroll engine starts. -->
   <section class="collection" id="collection" aria-label="Collection">
-    <div class="stage" data-sc-stage>
+    <div>
       <div class="rail" id="rail">
 
         <article class="sheet sheet--maker" id="obj-00" aria-labelledby="about-title">
