@@ -13,10 +13,10 @@ const CONFIG = {
 
   // Repos to show first, in this order, marked "Pinned".
   // Use the exact repo names, e.g. ["LogisticsShippinhRates"]
-  pinnedRepos: [],
+  pinnedRepos: ["placement-tracker"],
 
   // Repos to hide from the site (forked repos are always hidden)
-  excludeRepos: ["testrepo"],
+  excludeRepos: ["testrepo", "Yusuf011-4023.github.io"],
 
   // Hide the special "username/username" profile README repo if you make one
   hideProfileReadme: true,
